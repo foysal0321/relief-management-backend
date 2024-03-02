@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const bcrypt = require("bcrypt");
+//const bcrypt = require("bcrypt");
 const { MongoClient, ObjectId } = require("mongodb");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
@@ -28,6 +28,10 @@ async function run() {
     const db = client.db("level-2");
     const collection = db.collection("relief-users");
     const reliefData = db.collection("relief-management");
+    const userDonors = db.collection("relief-users-donors");
+    const userReview = db.collection("relief-users-review");
+    const volunteer = db.collection("relief-volunteers");
+    const community = db.collection("relief-user-community");
 
     // User Registration
     app.post("/api/v1/register", async (req, res) => {
@@ -43,7 +47,7 @@ async function run() {
       }
 
       // Hash the password
-      const hashedPassword = await bcrypt.hash(password, 10);
+      //const hashedPassword = await bcrypt.hash(password, 10);
 
       // Insert user into the database
       await collection.insertOne({ name, email, password: hashedPassword });
@@ -65,10 +69,10 @@ async function run() {
       }
       console.log(user);
       // Compare hashed password
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        return res.status(401).json({ message: "Invalid email or password" });
-      }
+      //const isPasswordValid = await bcrypt.compare(password, user.password);
+      // if (!isPasswordValid) {
+      //   return res.status(401).json({ message: "Invalid email or password" });
+      // }
 
       // Generate JWT token
       const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
@@ -83,7 +87,8 @@ async function run() {
       });
     });
 
-    // donation data
+// =============== donation categori data
+
     app.get("/api/v1", async (req, res) => {
       res.send("Server is running..");
     });
@@ -138,6 +143,66 @@ async function run() {
       res.send(result);
     });
 
+// =============== user donors
+
+    app.post("/api/v1/user-donors", async (req, res) => {
+      const query = req.body
+      const result = await userDonors.insertOne(query)
+      res.send(result)
+    })
+
+    app.get("/api/v1/user-donors", async (req, res) => {
+      const query = {}
+      const result = await userDonors.find(query).toArray()
+      res.send(result)
+    })
+
+// ============== user reviews
+
+    app.post("/api/v1/create-testimonial", async (req, res) => {
+      const query = req.body
+      const result = await userReview.insertOne(query)
+      res.send(result)
+    })
+
+    app.get("/api/v1/create-testimonial", async (req, res) => {
+      const query = {}
+      const result = await userReview.find(query).toArray()
+      res.send(result)
+    })
+
+// ============== volunteer
+
+    app.post("/api/v1/volunteer", async (req, res) => {
+      const query = req.body
+      const result = await volunteer.insertOne(query)
+      res.send(result)
+    })
+
+    app.get("/api/v1/volunteer", async (req, res) => {
+      const query = {}
+      const result = await volunteer.find(query).toArray()
+      res.send(result)
+    })
+
+// ============== community
+
+    app.post("/api/v1/community", async (req, res) => {
+      const query = req.body
+      const result = await community.insertOne(query)
+      res.send(result)
+    })
+
+    app.get("/api/v1/community", async (req, res) => {
+      const query = {}
+      const result = await community.find(query).toArray()
+      res.send(result)
+    })
+
+
+
+
+
     // Start the server
     app.listen(port, () => {
       console.log(`Server is running on http://localhost:${port}`);
@@ -148,7 +213,7 @@ async function run() {
 
 run().catch(console.dir);
 
-// Test route
+// // Test route
 app.get("/", (req, res) => {
   const serverStatus = {
     message: "Server is running smoothly",
